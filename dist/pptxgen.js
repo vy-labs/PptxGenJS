@@ -2637,15 +2637,16 @@ var PptxGenJS = function(){
 
 		// A: Create Chart XML -----------------------------------------------------------
 		if ( Array.isArray(rel.opts.type) ) {
-			rel.opts.type.forEach(function(type){
+			rel.opts.type.forEach(function(type, index){
 				var chartType = type.type.name;
 				var data = type.data;
 				var options = getMix(rel.opts, type.options);
 				var valAxisId = options.secondaryValAxis ? AXIS_ID_VALUE_SECONDARY : AXIS_ID_VALUE_PRIMARY;
 				var catAxisId = options.secondaryCatAxis ? AXIS_ID_CATEGORY_SECONDARY : AXIS_ID_CATEGORY_PRIMARY;
 				var isMultiTypeChart = true;
-				usesSecondaryValAxis = usesSecondaryValAxis || options.secondaryValAxis;
-				strXml += makeChartType(chartType, data, options, valAxisId, catAxisId, isMultiTypeChart);
+        usesSecondaryValAxis = usesSecondaryValAxis || options.secondaryValAxis;
+        const alreadyPlottedSeriesNum = rel.opts.type.slice(0, index).map(el => el.data.length).reduce((prev, el) => prev+el, 0);
+				strXml += makeChartType(chartType, data, options, valAxisId, catAxisId, isMultiTypeChart, alreadyPlottedSeriesNum);
 			});
 		}
 		else {
@@ -2791,7 +2792,7 @@ var PptxGenJS = function(){
 	 * @param {String} valAxisId
 	 * @param {String} catAxisId
 	 */
-	function makeChartType(chartType, data, opts, valAxisId, catAxisId, isMultiTypeChart) {
+	function makeChartType(chartType, data, opts, valAxisId, catAxisId, isMultiTypeChart, axisIndex) {
 		// NOTE: "Chart Range" (as shown in "select Chart Area dialog") is calculated.
 		// ....: Ensure each X/Y Axis/Col has same row height (esp. applicable to XY Scatter where X can often be larger than Y's)
 		var strXml = '';
@@ -2829,8 +2830,11 @@ var PptxGenJS = function(){
 				     }
 				    ]
 				*/
-				var colorIndex = -1; // Maintain the color index by region
-				data.forEach(function(obj){
+        var colorIndex = -1; // Maintain the color index by region
+        if (axisIndex || axisIndex === 0) {
+          colorIndex = axisIndex + colorIndex;
+        }
+				data.forEach(function(obj, i){
 					colorIndex++;
 					var idx = obj.index;
 					strXml += '<c:ser>';
@@ -2910,13 +2914,13 @@ var PptxGenJS = function(){
 							}
 							else if (chartType === 'bar') {
 								strXml += '<a:solidFill>';
-								strXml += '  <a:srgbClr val="'+ arrColors[index % arrColors.length] +'"/>';
+								strXml += '  <a:srgbClr val="'+ arrColors[colorIndex % arrColors.length] +'"/>';
 								strXml += '</a:solidFill>';
 							}
 							else {
 								strXml += '<a:ln>';
 								strXml += '  <a:solidFill>';
-								strXml += '   <a:srgbClr val="'+ arrColors[index % arrColors.length] +'"/>';
+								strXml += '   <a:srgbClr val="'+ arrColors[colorIndex % arrColors.length] +'"/>';
 								strXml += '  </a:solidFill>';
 								strXml += '</a:ln>';
 							}
@@ -2924,7 +2928,92 @@ var PptxGenJS = function(){
 							strXml += '    </c:spPr>';
 							strXml += '  </c:dPt>';
 						});
-					}
+          }
+
+          // invest colors for line chart  - bhaskar
+          if (chartType == 'line' && opts.invertedColors) {
+            obj.values.forEach(function(value,index){
+              if (value < 0) {
+                strXml += '  <c:dPt>';
+                strXml += `    <c:idx val="${index}"/>`;
+                strXml += '      <c:invertIfNegative val="'+ 1 +'"/>';
+                strXml += '    <c:spPr>';
+                if ( opts.lineSize === 0 ){
+                  strXml += '      <a:ln><a:noFill/></a:ln>';
+                } else {
+                  strXml += '      <a:ln>';
+                  strXml += '        <a:solidFill>';
+                  strXml += '          <a:srgbClr val="c34b48"/>';
+                  strXml += '        </a:solidFill>';
+                  strXml += '      </a:ln>';
+                }
+                strXml += createShadowElement(opts.shadow, DEF_SHAPE_SHADOW);
+                strXml += '    </c:spPr>';
+                strXml += '  </c:dPt>';
+              }
+            })
+          }
+
+          // data labels based on dataLabelFrequency
+          if (opts.dataLabelFrequency) {
+            strXml += '  <c:dLbls>';
+            obj.values.forEach((el, index) => {
+              if (index % opts.dataLabelFrequency === 0) {
+                strXml += '    <c:dLbl>';
+                strXml += `      <c:idx val="${index}"/>`;
+                strXml += '      <c:numFmt formatCode="'+ opts.dataLabelFormatCode +'" sourceLinked="0"/>';
+                strXml += '      <c:spPr>';
+                strXml += '        <a:noFill/>';
+                strXml += '        <a:ln>';
+                strXml += '          <a:noFill/>';
+                strXml += '        </a:ln>';
+                strXml += '        <a:effectLst/>';
+                strXml += '      </c:spPr>';
+                strXml += '      <c:txPr>';
+                strXml += '        <a:bodyPr/>';
+                strXml += '        <a:lstStyle/>';
+                strXml += '        <a:p><a:pPr>';
+                strXml += '          <a:defRPr b="'+( opts.dataLabelFontBold ? '1' : '0' )+'" i="0" strike="noStrike" sz="'+ (opts.dataLabelFontSize || DEF_FONT_SIZE) +'00" u="none">';
+                strXml += '            <a:solidFill>'+ createColorElement(opts.dataLabelColor || DEF_FONT_COLOR) +'</a:solidFill>';
+                strXml += '            <a:latin typeface="'+ (opts.dataLabelFontFace || 'Arial') +'"/>';
+                strXml += '          </a:defRPr>';
+                strXml += '        </a:pPr></a:p>';
+                strXml += '      </c:txPr>';
+                if (index === 0 && chartType == 'line') {
+                  strXml += '<c:dLblPos val="r"/>';
+                } else if (index === obj.values.length - 1 && chartType == 'line') {
+                  strXml += '<c:dLblPos val="l"/>';
+                } else {
+                  strXml += '<c:dLblPos val="'+ (opts.dataLabelPosition) +'"/>';
+                }
+                strXml += '      <c:showLegendKey val="0"/>';
+                strXml += '      <c:showCatName val="0"/>';
+                strXml += '      <c:showVal val="1"/>';
+                strXml += '      <c:showSerName val="0"/>';
+                strXml += '      <c:showPercent val="0"/>';
+                strXml += '      <c:showBubbleSize val="0"/>';
+                strXml += '      <c:showLeaderLines val="0"/>';
+                strXml += '    </c:dLbl>'
+              }
+            });
+            strXml += '    <c:spPr>';
+            strXml += '      <a:noFill/>';
+            strXml += '      <a:ln>';
+            strXml += '        <a:noFill/>';
+            strXml += '      </a:ln>';
+            strXml += '      <a:effectLst/>';
+            strXml += '    </c:spPr>';
+            strXml += '    <c:showLegendKey val="0"/>';
+            strXml += '    <c:numFmt formatCode="'+ opts.dataLabelFormatCode +'" sourceLinked="0"/>';
+            strXml += '    <c:showVal val="'+ (opts.showValue ? '1' : '0') +'"/>';
+            strXml += '    <c:dLblPos val="'+ (opts.dataLabelPosition) +'"/>';
+            strXml += '    <c:showCatName val="0"/>';
+            strXml += '    <c:showSerName val="0"/>';
+            strXml += '    <c:showPercent val="0"/>';
+            strXml += '    <c:showBubbleSize val="0"/>';
+            strXml += '    <c:showLeaderLines val="0"/>';
+            strXml += '  </c:dLbls>'
+          }
 
 					// 2: "Categories"
 					{
