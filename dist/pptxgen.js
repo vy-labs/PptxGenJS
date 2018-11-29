@@ -2955,10 +2955,10 @@ var PptxGenJS = function(){
           }
 
           // data labels based on dataLabelFrequency
-          if (opts.dataLabelFrequency) {
+          if (opts.dataLabelFrequency || obj.extraLabels) {
             strXml += '  <c:dLbls>';
             obj.values.forEach((el, index) => {
-              if (index % opts.dataLabelFrequency === 0) {
+              if (opts.dataLabelFrequency && index % opts.dataLabelFrequency === 0) {
                 strXml += '    <c:dLbl>';
                 strXml += `      <c:idx val="${index}"/>`;
                 strXml += '      <c:numFmt formatCode="'+ opts.dataLabelFormatCode +'" sourceLinked="0"/>';
@@ -2993,6 +2993,36 @@ var PptxGenJS = function(){
                 strXml += '      <c:showPercent val="0"/>';
                 strXml += '      <c:showBubbleSize val="0"/>';
                 strXml += '      <c:showLeaderLines val="0"/>';
+                strXml += '    </c:dLbl>'
+              } else if (obj.extraLabels) {
+                strXml += '    <c:dLbl>';
+                strXml += `       <c:idx val="${index}"/>`;
+                strXml += '       <c:tx>';
+                strXml += '         <c:rich>';
+                strXml += `           <a:bodyPr/>`;
+                strXml += `           <a:lstStyle/>`;
+                strXml += `           <a:p>`;
+                strXml += `             <a:pPr>`;
+                strXml += '               <a:defRPr wrap="none" b="'+( opts.dataLabelFontBold ? '1' : '0' )+'" i="0" strike="noStrike" sz="'+ (opts.dataLabelFontSize || DEF_FONT_SIZE) +'00" u="none">';
+                strXml += '                 <a:solidFill>'+ createColorElement(opts.dataLabelColor || DEF_FONT_COLOR) +'</a:solidFill>';
+                strXml += '                 <a:latin typeface="'+ (opts.dataLabelFontFace || 'Arial') +'"/>';
+                strXml += '               </a:defRPr>';
+                strXml += '             </a:pPr>';
+                strXml += `             <a:r>`;
+                strXml += `                <a:t>${obj.extraLabels[index]}</a:t>`
+                strXml += `             </a:r>`;
+                strXml += '             <a:endParaRPr lang="en-US"/>'
+                strXml += `            </a:p>`;
+                strXml += `         </c:rich>`;
+                strXml += `       </c:tx>`;
+                strXml += '      <c:showLegendKey val="0"/>';
+                strXml += '      <c:showCatName val="0"/>';
+                strXml += '      <c:showVal val="1"/>';
+                strXml += '      <c:showSerName val="0"/>';
+                strXml += '      <c:showPercent val="0"/>';
+                strXml += '      <c:showBubbleSize val="0"/>';
+                strXml += '      <c:showLeaderLines val="0"/>';
+                strXml += '';
                 strXml += '    </c:dLbl>'
               }
             });
@@ -3056,7 +3086,7 @@ var PptxGenJS = function(){
 					}
 
 					// Option: `smooth`
-					if ( chartType == 'line' ) strXml += '<c:smooth val="'+ (opts.lineSmooth ? "1" : "0" ) +'"/>';
+          if ( chartType == 'line' ) strXml += '<c:smooth val="'+ (opts.lineSmooth ? "1" : "0" ) +'"/>';
 
 					// 4: Close "SERIES"
 					strXml += '</c:ser>';
@@ -3179,7 +3209,58 @@ var PptxGenJS = function(){
 						strXml += '    <a:effectLst/>';
 						strXml += '  </c:spPr>';
 						strXml += '</c:marker>';
-					}
+          }
+          if (obj.extraLabels) {
+            strXml += '  <c:dLbls>';
+            obj.extraLabels.forEach((el, index) => {
+              strXml += '    <c:dLbl>';
+              strXml += `       <c:idx val="${index}"/>`;
+              strXml += '       <c:tx>';
+              strXml += '         <c:rich>';
+              strXml += `           <a:bodyPr/>`;
+              strXml += `           <a:lstStyle/>`;
+              strXml += `           <a:p>`;
+              strXml += `             <a:pPr>`;
+              strXml += '               <a:defRPr wrap="none" b="'+( opts.dataLabelFontBold ? '1' : '0' )+'" i="0" strike="noStrike" sz="'+ (opts.dataLabelFontSize || DEF_FONT_SIZE) +'00" u="none">';
+              strXml += '                 <a:solidFill>'+ createColorElement(opts.dataLabelColor || DEF_FONT_COLOR) +'</a:solidFill>';
+              strXml += '                 <a:latin typeface="'+ (opts.dataLabelFontFace || 'Arial') +'"/>';
+              strXml += '               </a:defRPr>';
+              strXml += '             </a:pPr>';
+              strXml += `             <a:r>`;
+              strXml += `                <a:t>${obj.extraLabels[index]}</a:t>`
+              strXml += `             </a:r>`;
+              strXml += '             <a:endParaRPr lang="en-US"/>'
+              strXml += `            </a:p>`;
+              strXml += `         </c:rich>`;
+              strXml += `       </c:tx>`;
+              strXml += '      <c:showLegendKey val="0"/>';
+              strXml += '      <c:showCatName val="0"/>';
+              strXml += '      <c:showVal val="1"/>';
+              strXml += '      <c:showSerName val="0"/>';
+              strXml += '      <c:showPercent val="0"/>';
+              strXml += '      <c:showBubbleSize val="0"/>';
+              strXml += '      <c:showLeaderLines val="0"/>';
+              strXml += '';
+              strXml += '    </c:dLbl>'
+            })
+            strXml += '    <c:spPr>';
+            strXml += '      <a:noFill/>';
+            strXml += '      <a:ln>';
+            strXml += '        <a:noFill/>';
+            strXml += '      </a:ln>';
+            strXml += '      <a:effectLst/>';
+            strXml += '    </c:spPr>';
+            strXml += '    <c:showLegendKey val="0"/>';
+            strXml += '    <c:numFmt formatCode="'+ opts.dataLabelFormatCode +'" sourceLinked="0"/>';
+            strXml += '    <c:showVal val="'+ (obj.showValue ? '1' : '0') +'"/>';
+            strXml += '    <c:dLblPos val="'+ (opts.dataLabelPosition) +'"/>';
+            strXml += '    <c:showCatName val="0"/>';
+            strXml += '    <c:showSerName val="0"/>';
+            strXml += '    <c:showPercent val="0"/>';
+            strXml += '    <c:showBubbleSize val="0"/>';
+            strXml += '    <c:showLeaderLines val="0"/>';
+            strXml += '  </c:dLbls>'
+          }
 
 					// Color bar chart bars various colors
 					// Allow users with a single data set to pass their own array of colors (check for this using != ours)
@@ -3693,7 +3774,7 @@ var PptxGenJS = function(){
 				rotate:   opts.valAxisTitleRotate,
 				title:    opts.valAxisTitle || 'Axis Title'
 			});
-		}
+    }
 		strXml += ' <c:numFmt formatCode="'+ (opts.yAxisLabelFormatCode || opts.valAxisLabelFormatCode || 'General') +'" sourceLinked="0"/>';
 		if ( opts.type.name === 'scatter' ) {
 			strXml += '  <c:majorTickMark val="none"/>';
