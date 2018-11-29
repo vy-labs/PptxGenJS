@@ -3017,6 +3017,7 @@ var PptxGenJS = function(){
                 strXml += `       </c:tx>`;
                 strXml += '      <c:showLegendKey val="0"/>';
                 strXml += '      <c:showCatName val="0"/>';
+                strXml += '      <c:dLblPos val="'+ (opts.dataLabelPosition) +'"/>';
                 strXml += '      <c:showVal val="1"/>';
                 strXml += '      <c:showSerName val="0"/>';
                 strXml += '      <c:showPercent val="0"/>';
@@ -3234,6 +3235,7 @@ var PptxGenJS = function(){
               strXml += `         </c:rich>`;
               strXml += `       </c:tx>`;
               strXml += '      <c:showLegendKey val="0"/>';
+              strXml += '      <c:dLblPos val="'+ (opts.dataLabelPosition) +'"/>';
               strXml += '      <c:showCatName val="0"/>';
               strXml += '      <c:showVal val="1"/>';
               strXml += '      <c:showSerName val="0"/>';
