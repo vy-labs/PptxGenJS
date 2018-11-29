@@ -3597,7 +3597,7 @@ var PptxGenJS = function(){
 		}
 		// NOTE: Adding Val Axis Formatting if scatter or bubble charts
 		if ( opts.type.name == 'scatter' || opts.type.name == 'bubble' ) {
-			strXml += '  <c:numFmt formatCode="'+ (opts.valAxisLabelFormatCode ? opts.valAxisLabelFormatCode : 'General') +'" sourceLinked="0"/>';
+			strXml += '  <c:numFmt formatCode="'+ (opts.xAxisLabelFormatCode || opts.valAxisLabelFormatCode || 'General') +'" sourceLinked="0"/>';
 		}
 		else {
 			strXml += '  <c:numFmt formatCode="'+ (opts.catLabelFormatCode || "General") +'" sourceLinked="0"/>';
@@ -3694,7 +3694,7 @@ var PptxGenJS = function(){
 				title:    opts.valAxisTitle || 'Axis Title'
 			});
 		}
-		strXml += ' <c:numFmt formatCode="'+ (opts.valAxisLabelFormatCode ? opts.valAxisLabelFormatCode : 'General') +'" sourceLinked="0"/>';
+		strXml += ' <c:numFmt formatCode="'+ (opts.yAxisLabelFormatCode || opts.valAxisLabelFormatCode || 'General') +'" sourceLinked="0"/>';
 		if ( opts.type.name === 'scatter' ) {
 			strXml += '  <c:majorTickMark val="none"/>';
 			strXml += '  <c:minorTickMark val="none"/>';
