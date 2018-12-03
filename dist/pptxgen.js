@@ -3665,7 +3665,18 @@ var PptxGenJS = function(){
 			strXml += '<c:' + (opts.catLabelFormatCode ? 'dateAx' : 'catAx') + '>';
 		}
 		strXml += '  <c:axId val="'+ axisId +'"/>';
-		strXml += '  <c:scaling><c:orientation val="'+ (opts.catAxisOrientation || (opts.barDir == 'col' ? 'minMax' : 'minMax')) +'"/></c:scaling>';
+    strXml += '  <c:scaling>';
+    strXml += '    <c:orientation val="'+ (opts.catAxisOrientation || (opts.barDir == 'col' ? 'minMax' : 'minMax')) +'"/>';
+
+    if ( opts.type.name == 'scatter' || opts.type.name == 'bubble' ) {
+      if (opts.xAxisMaxVal || opts.xAxisMaxVal === 0 || opts.catAxisMaxVal || opts.catAxisMaxVal == 0) {
+        strXml += `<c:max val="${opts.xAxisMaxVal || opts.catAxisMaxVal}"/>`;
+      }
+      if (opts.xAxisMinVal || opts.xAxisMinVal === 0 || opts.catAxisMinVal || opts.catAxisMinVal == 0) {
+        strXml += `<c:min val="${opts.xAxisMinVal || opts.catAxisMinVal}"/>`;
+      }
+    }
+    strXml += '   </c:scaling>';
 		strXml += '  <c:delete val="'+ (opts.catAxisHidden ? 1 : 0) +'"/>';
 		strXml += '  <c:axPos val="'+ (opts.barDir == 'col' ? 'b' : 'l') +'"/>';
 		strXml += ( opts.catGridLine !== 'none' ? createGridLineElement(opts.catGridLine, DEF_CHART_GRIDLINE) : '' );
@@ -3762,8 +3773,12 @@ var PptxGenJS = function(){
 		strXml += '  <c:axId val="'+ valAxisId +'"/>';
 		strXml += '  <c:scaling>';
 		strXml += '    <c:orientation val="'+ (opts.valAxisOrientation || (opts.barDir == 'col' ? 'minMax' : 'minMax')) +'"/>';
-		if (opts.valAxisMaxVal || opts.valAxisMaxVal == 0) strXml += '<c:max val="'+ opts.valAxisMaxVal +'"/>';
-		if (opts.valAxisMinVal || opts.valAxisMinVal == 0) strXml += '<c:min val="'+ opts.valAxisMinVal +'"/>';
+    if (opts.yAxisMaxVal || opts.yAxisMaxVal === 0 || opts.valAxisMaxVal || opts.valAxisMaxVal == 0) {
+      strXml += `<c:max val="${opts.yAxisMaxVal ||opts.valAxisMaxVal}"/>`;
+    }
+		if (opts.yAxisMinVal || opts.yAxisMinVal === 0 || opts.valAxisMinVal || opts.valAxisMinVal == 0) {
+      strXml += `<c:min val="${opts.yAxisMinVal ||opts.valAxisMinVal}"/>`;
+    }
 		strXml += '  </c:scaling>';
 		strXml += '  <c:delete val="'+ (opts.valAxisHidden ? 1 : 0) +'"/>';
 		strXml += '  <c:axPos val="'+ axisPos +'"/>';
