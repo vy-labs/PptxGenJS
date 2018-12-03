@@ -3688,7 +3688,7 @@ var PptxGenJS = function(){
 		if ( opts.type.name === 'scatter' ) {
 			strXml += '  <c:majorTickMark val="none"/>';
 			strXml += '  <c:minorTickMark val="none"/>';
-			strXml += '  <c:tickLblPos val="nextTo"/>';
+      strXml += '  <c:tickLblPos val="'+ (opts.catAxisLabelPos || 'nextTo') +'"/>';
 		}
 		else {
 			strXml += '  <c:majorTickMark val="out"/>';
@@ -3781,12 +3781,12 @@ var PptxGenJS = function(){
 		if ( opts.type.name === 'scatter' ) {
 			strXml += '  <c:majorTickMark val="none"/>';
 			strXml += '  <c:minorTickMark val="none"/>';
-			strXml += '  <c:tickLblPos val="nextTo"/>';
+      strXml += ' <c:tickLblPos val="'+ (opts.valAxisLabelPos || 'nextTo') +'"/>';
 		}
 		else {
 			strXml += ' <c:majorTickMark val="out"/>';
 			strXml += ' <c:minorTickMark val="none"/>';
-			strXml += ' <c:tickLblPos val="'+ (opts.catAxisLabelPos || (opts.barDir == 'col' ? 'nextTo' : 'low')) +'"/>';
+			strXml += ' <c:tickLblPos val="'+ (opts.valAxisLabelPos || (opts.barDir == 'col' ? 'nextTo' : 'low')) +'"/>';
 		}
 		strXml += ' <c:spPr>';
 		strXml += '   <a:ln w="12700" cap="flat">';
