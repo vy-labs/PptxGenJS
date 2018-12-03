@@ -2942,9 +2942,9 @@ var PptxGenJS = function(){
                 if ( opts.lineSize === 0 ){
                   strXml += '      <a:ln><a:noFill/></a:ln>';
                 } else {
-                  strXml += '      <a:ln>';
+                  strXml += '      <a:ln w="' + (opts.lineSize * ONEPT) + '" cap="flat">';
                   strXml += '        <a:solidFill>';
-                  strXml += '          <a:srgbClr val="c34b48"/>';
+                  strXml += `          ${createColorElement('c34b48')}`;
                   strXml += '        </a:solidFill>';
                   strXml += '      </a:ln>';
                 }
