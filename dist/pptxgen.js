@@ -3716,7 +3716,7 @@ var PptxGenJS = function(){
 		strXml += '  </a:p>';
 		strXml += ' </c:txPr>';
 		strXml += ' <c:crossAx val="'+ valAxisId +'"/>';
-		strXml += ' <c:crosses val="autoZero"/>';
+		strXml += ` <c:crosses val="${opts.catAxisCrossPos || 'autoZero'}" />`;
 		strXml += ' <c:auto val="1"/>';
 		strXml += ' <c:lblAlgn val="ctr"/>';
 		strXml += ' <c:noMultiLvlLbl val="1"/>';
